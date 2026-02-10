@@ -1,11 +1,14 @@
-# Milestone 2 Documentation
+## Project Overview
+OSU Buckeye Marketplace is a student-only marketplace designed to allow OSU students to buy and sell items securely within the campus community.
 
-This folder contains all architecture, database, and frontend design artifacts for Milestone 2.
+## Feature Prioritization
+Features were prioritized using a GitHub Kanban board to distinguish MVP launch requirements from future enhancements, based on user needs and journey pain points identified in Milestone 1.
 
-## Contents
-- Architecture Diagram
+## Architecture Decisions
+The system uses a three-tier architecture with a React frontend, .NET Web API backend, and SQL Server database. Architecture decisions are documented using Architecture Decision Records (ADR), including AI-assisted research.
+
+## Documentation
+- System Architecture Diagram
 - Database Schema (ERD)
-- Architecture Decision Records (ADR)
-- Component Architecture (Atomic Design)
-
-All design decisions in this folder build directly on the user personas, user stories, and feature prioritization defined in Milestone 1.
+- Architecture Decision Records
+- Component Architecture
