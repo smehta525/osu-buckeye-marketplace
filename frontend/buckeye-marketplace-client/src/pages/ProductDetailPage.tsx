@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import type { Product } from "../types/Product";
 import { getProductById } from "../api/productsApi";
+import type { Product } from "../types/Product";
 
-export default function ProductDetailPage() {
+function ProductDetailPage() {
   const { id } = useParams();
   const productId = Number(id);
 
@@ -12,56 +12,57 @@ export default function ProductDetailPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!Number.isFinite(productId)) {
-      setError("Invalid product id.");
-      setLoading(false);
-      return;
-    }
+    const loadProduct = async () => {
+      if (!id || Number.isNaN(productId)) {
+        setError("Invalid product ID.");
+        setLoading(false);
+        return;
+      }
 
-    (async () => {
       try {
         const data = await getProductById(productId);
         setProduct(data);
-      } catch (e: unknown) {
-        if ((e as Error)?.message === "NOT_FOUND") setError("Product not found (404).");
-        else setError("Unable to load product details.");
+      } catch (err) {
+        console.error("Failed to load product:", err);
+        setError("Product not found.");
       } finally {
         setLoading(false);
       }
-    })();
-  }, [productId]);
+    };
 
-  if (loading) return <p>Loading product details...</p>;
+    loadProduct();
+  }, [id, productId]);
 
-  if (error) {
-    return (
-      <div>
-        <Link to="/products">← Back to Products</Link>
-        <p>{error}</p>
-      </div>
-    );
-  }
-
-  if (!product) return <p>No product data available.</p>;
+  if (loading) return <p>Loading product...</p>;
+  if (error) return <p>{error}</p>;
+  if (!product) return <p>Product not found.</p>;
 
   return (
-    <div>
-      <Link to="/products">← Back to Products</Link>
+    <div style={{ padding: 24, maxWidth: 900, margin: "0 auto" }}>
+      <Link to="/products" style={{ display: "inline-block", marginBottom: 16 }}>
+        ← Back to products
+      </Link>
+
       <h1>{product.title}</h1>
+      <p><strong>ID:</strong> {product.id}</p>
 
       <img
         src={product.imageUrl}
         alt={product.title}
-        style={{ width: "100%", maxWidth: 900, borderRadius: 10, marginTop: 10 }}
+        style={{ width: "100%", maxWidth: 700, borderRadius: 12 }}
       />
 
-      <div style={{ marginTop: 12, display: "grid", gap: 6 }}>
-        <p><strong>Description:</strong> {product.description}</p>
-        <p><strong>Price:</strong> ${product.price.toFixed(2)}</p>
-        <p><strong>Category:</strong> {product.category}</p>
-        <p><strong>Seller:</strong> {product.sellerName}</p>
-        <p><strong>Posted Date:</strong> {product.postedDate}</p>
-      </div>
+      <p style={{ marginTop: 16 }}>{product.description}</p>
+
+      <p><strong>Price:</strong> ${product.price.toFixed(2)}</p>
+      <p><strong>Category:</strong> {product.category}</p>
+      <p><strong>Seller:</strong> {product.sellerName}</p>
+      <p>
+        <strong>Posted:</strong>{" "}
+        {new Date(product.postedDate).toLocaleDateString()}
+      </p>
     </div>
   );
 }
+
+export default ProductDetailPage;

@@ -42,3 +42,9 @@
   font-size: 0.85rem;
   color: #b0b0b0;
 }
+
+.product-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}

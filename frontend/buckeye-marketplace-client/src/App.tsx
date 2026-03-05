@@ -1,11 +1,14 @@
+import { Routes, Route, Navigate } from "react-router-dom";
 import ProductListPage from "./pages/ProductListPage";
-import "./App.css";
+import ProductDetailPage from "./pages/ProductDetailPage";
 
 function App() {
   return (
-    <div>
-      <ProductListPage />
-    </div>
+    <Routes>
+      <Route path="/" element={<Navigate to="/products" replace />} />
+      <Route path="/products" element={<ProductListPage />} />
+      <Route path="/products/:id" element={<ProductDetailPage />} />
+    </Routes>
   );
 }
 
