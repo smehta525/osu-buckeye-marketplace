@@ -14,7 +14,7 @@ function ProductDetailPage() {
   useEffect(() => {
     const loadProduct = async () => {
       if (!id || Number.isNaN(productId)) {
-        setError("Invalid product ID.");
+        setError("ERROR: Invalid product ID.");
         setLoading(false);
         return;
       }
@@ -23,8 +23,8 @@ function ProductDetailPage() {
         const data = await getProductById(productId);
         setProduct(data);
       } catch (err) {
-        console.error("Failed to load product:", err);
-        setError("Product not found.");
+        console.error("ERROR 404: Failed to load product:", err);
+        setError("ERROR 404: Product not found.");
       } finally {
         setLoading(false);
       }

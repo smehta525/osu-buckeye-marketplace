@@ -126,7 +126,7 @@ public class ProductsController : ControllerBase
     {
         var product = Products.FirstOrDefault(p => p.Id == id);
         if (product is null)
-            return NotFound(new { message = $"Product with id {id} not found." });
+            return NotFound(new { message = $"ERROR 404: Product with id {id} not found." });
 
         return Ok(product);
     }
