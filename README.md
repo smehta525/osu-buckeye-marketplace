@@ -4,9 +4,7 @@ An e-commerce platform design project for Ohio State University focused on user 
 1. Project Description
     Buckeye Marketplace
         This project is a simple marketplace app where users can view products posted by other people. The app shows a list of products and lets the user click on a product to see more details. The frontend is built with React and the backend is a .NET Web API that returns product data.
-
         The API stores products in memory and sends them to the React frontend. The React app fetches the data and displays it in product cards.
-
         This milestone focuses on building a vertical slice, so the frontend and backend work together so users can view products and see their details.
 
 2. How to Run the Project Locally:
