@@ -1,42 +1,37 @@
-import { useEffect, useState } from "react";
-import ProductList from "../components/ProductList/ProductList";
-import { getProducts } from "../api/productsApi";
+import ProductCard from "../components/ProductCard/ProductCard";
 import type { Product } from "../types/Product";
 
-function ProductListPage() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+type Props = {
+  products: Product[];
+  loading: boolean;
+  onAddToCart: (productId: number) => void;
+  onViewDetails: (product: Product) => void;
+};
 
-  useEffect(() => {
-    const loadProducts = async () => {
-      try {
-        const data = await getProducts();
-        setProducts(data);
-      } catch (err) {
-        console.error("Failed to load products:", err);
-        setError("Unable to load products from the API.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadProducts();
-  }, []);
-
+export default function ProductListPage({
+  products,
+  loading,
+  onAddToCart,
+  onViewDetails,
+}: Props) {
   if (loading) {
     return <p>Loading products...</p>;
   }
 
-  if (error) {
-    return <p>{error}</p>;
-  }
+  return (
+    <section className="products-section">
+      <h2>Products</h2>
 
-  if (products.length === 0) {
-    return <p>No products available.</p>;
-  }
-
-  return <ProductList products={products} />;
+      <div className="products-grid">
+        {products.map((product) => (
+          <ProductCard
+            key={product.id}
+            product={product}
+            onAddToCart={onAddToCart}
+            onViewDetails={onViewDetails}
+          />
+        ))}
+      </div>
+    </section>
+  );
 }
-
-export default ProductListPage;

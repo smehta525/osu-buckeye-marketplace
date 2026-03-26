@@ -1,35 +1,47 @@
-import { Link } from "react-router-dom";
 import type { Product } from "../../types/Product";
 import "./ProductCard.css";
 
-type ProductCardProps = {
+type Props = {
   product: Product;
+  onAddToCart: (productId: number) => void;
+  onViewDetails: (product: Product) => void;
 };
 
-function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({
+  product,
+  onAddToCart,
+  onViewDetails,
+}: Props) {
   return (
-    <Link to={`/products/${product.id}`} className="product-card-link">
-      <div className="product-card">
-        <img
-          className="product-card__image"
-          src={product.imageUrl}
-          alt={product.title}
-        />
+    <div className="product-card">
+      <img className="product-image" src={product.imageUrl} alt={product.title} />
 
-        <div className="product-card__content">
-          <h3 className="product-card__title">{product.title}</h3>
-          <p className="product-card__meta">ID: {product.id}</p>
-          <p className="product-card__description">{product.description}</p>
-          <p className="product-card__price">${product.price.toFixed(2)}</p>
-          <p className="product-card__meta">Category: {product.category}</p>
-          <p className="product-card__meta">Seller: {product.sellerName}</p>
-          <p className="product-card__meta">
-            Posted: {new Date(product.postedDate).toLocaleDateString()}
-          </p>
+      <div className="product-content">
+        <p>
+          <strong>ID:</strong> {product.id}
+        </p>
+
+        <h3>{product.title}</h3>
+
+        <p className="product-description">{product.description}</p>
+
+        <p>
+          <strong>Category:</strong> {product.category}
+        </p>
+        <p>
+          <strong>Seller:</strong> {product.sellerName}
+        </p>
+        <p>
+          <strong>Date:</strong> {product.postedDate}
+        </p>
+
+        <p className="product-price">${product.price.toFixed(2)}</p>
+
+        <div className="product-buttons">
+          <button onClick={() => onAddToCart(product.id)}>Add to Cart</button>
+          <button onClick={() => onViewDetails(product)}>View Details</button>
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
-
-export default ProductCard;

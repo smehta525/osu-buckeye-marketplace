@@ -1,6 +1,41 @@
-@BuckeyeMarketplace.Api_HostAddress = http://localhost:5062
+@BuckeyeMarketplace_Api_HostAddress = http://localhost:5062
 
-GET {{BuckeyeMarketplace.Api_HostAddress}}/weatherforecast/
+GET {{BuckeyeMarketplace_Api_HostAddress}}/api/products
 Accept: application/json
 
 ###
+
+GET {{BuckeyeMarketplace_Api_HostAddress}}/api/products/1
+Accept: application/json
+
+###
+
+GET {{BuckeyeMarketplace_Api_HostAddress}}/api/cart
+Accept: application/json
+
+###
+
+POST {{BuckeyeMarketplace_Api_HostAddress}}/api/cart
+Content-Type: application/json
+
+{
+  "productId": 1,
+  "quantity": 1
+}
+
+###
+
+PUT {{BuckeyeMarketplace_Api_HostAddress}}/api/cart/1
+Content-Type: application/json
+
+{
+  "quantity": 3
+}
+
+###
+
+DELETE {{BuckeyeMarketplace_Api_HostAddress}}/api/cart/1
+
+###
+
+DELETE {{BuckeyeMarketplace_Api_HostAddress}}/api/cart/clear

@@ -15,7 +15,6 @@
 /Users/shreyamehta/Documents/GitHub/osu-buckeye-marketplace/backend/BuckeyeMarketplace.Api/bin/Debug/net10.0/BuckeyeMarketplace.Api.runtimeconfig.json
 /Users/shreyamehta/Documents/GitHub/osu-buckeye-marketplace/backend/BuckeyeMarketplace.Api/bin/Debug/net10.0/BuckeyeMarketplace.Api.dll
 /Users/shreyamehta/Documents/GitHub/osu-buckeye-marketplace/backend/BuckeyeMarketplace.Api/bin/Debug/net10.0/BuckeyeMarketplace.Api.pdb
-/Users/shreyamehta/Documents/GitHub/osu-buckeye-marketplace/backend/BuckeyeMarketplace.Api/bin/Debug/net10.0/Microsoft.AspNetCore.OpenApi.dll
 /Users/shreyamehta/Documents/GitHub/osu-buckeye-marketplace/backend/BuckeyeMarketplace.Api/bin/Debug/net10.0/Microsoft.OpenApi.dll
 /Users/shreyamehta/Documents/GitHub/osu-buckeye-marketplace/backend/BuckeyeMarketplace.Api/bin/Debug/net10.0/Swashbuckle.AspNetCore.Swagger.dll
 /Users/shreyamehta/Documents/GitHub/osu-buckeye-marketplace/backend/BuckeyeMarketplace.Api/bin/Debug/net10.0/Swashbuckle.AspNetCore.SwaggerGen.dll
@@ -35,3 +34,6 @@
 /Users/shreyamehta/Documents/GitHub/osu-buckeye-marketplace/backend/BuckeyeMarketplace.Api/obj/Debug/net10.0/BuckeyeMarketplace.Api.pdb
 /Users/shreyamehta/Documents/GitHub/osu-buckeye-marketplace/backend/BuckeyeMarketplace.Api/obj/Debug/net10.0/BuckeyeMarketplace.Api.genruntimeconfig.cache
 /Users/shreyamehta/Documents/GitHub/osu-buckeye-marketplace/backend/BuckeyeMarketplace.Api/obj/Debug/net10.0/ref/BuckeyeMarketplace.Api.dll
+/Users/shreyamehta/Documents/GitHub/osu-buckeye-marketplace/backend/BuckeyeMarketplace.Api/bin/Debug/net10.0/Microsoft.EntityFrameworkCore.dll
+/Users/shreyamehta/Documents/GitHub/osu-buckeye-marketplace/backend/BuckeyeMarketplace.Api/bin/Debug/net10.0/Microsoft.EntityFrameworkCore.Abstractions.dll
+/Users/shreyamehta/Documents/GitHub/osu-buckeye-marketplace/backend/BuckeyeMarketplace.Api/bin/Debug/net10.0/Microsoft.EntityFrameworkCore.InMemory.dll
