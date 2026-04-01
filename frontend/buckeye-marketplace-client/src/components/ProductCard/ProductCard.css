@@ -1,67 +1,96 @@
 .product-card {
   border: 1px solid #ddd;
-  border-radius: 10px;
+  border-radius: 8px;
   overflow: hidden;
   background: white;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  height: 100%;
-  min-height: 460px;
 }
 
 .product-image {
   width: 100%;
-  height: 220px;
+  height: 180px;
   object-fit: cover;
-  flex-shrink: 0;
 }
 
 .product-content {
-  padding: 16px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
+  gap: 5px;
   flex: 1;
 }
 
-.product-content h3 {
-  margin-top: 0;
-  margin-bottom: 8px;
-  min-height: 28px;
+.product-id {
+  font-size: 0.75rem;
+  color: #aaa;
 }
 
-.product-content p {
-  margin: 6px 0;
+.product-category {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #888;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.product-content h3 {
+  font-size: 1rem;
 }
 
 .product-description {
-  min-height: 48px;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.product-seller {
+  font-size: 0.8rem;
+  color: #777;
+}
+
+.product-date {
+  font-size: 0.8rem;
+  color: #999;
+}
+
+.product-url {
+  font-size: 0.7rem;
+  color: #bbb;
+  word-break: break-all;
 }
 
 .product-price {
   font-size: 1.1rem;
   font-weight: bold;
-  color: #1b5e20;
+  color: #bb0000;
   margin-top: auto;
-  padding-top: 8px;
 }
 
 .product-buttons {
   display: flex;
-  gap: 10px;
-  margin-top: 12px;
+  gap: 8px;
+  padding-top: 8px;
 }
 
 .product-buttons button {
   flex: 1;
-  padding: 10px;
+  padding: 8px;
   border: none;
-  border-radius: 8px;
-  background: black;
-  color: white;
+  border-radius: 4px;
   cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.product-buttons button:first-child {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.product-buttons button:last-child {
+  background: #bb0000;
+  color: white;
 }
 
 .product-buttons button:hover {
-  opacity: 0.9;
+  opacity: 0.85;
 }
