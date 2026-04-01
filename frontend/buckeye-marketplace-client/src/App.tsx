@@ -1,35 +1,47 @@
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import type { Cart, Product } from "./types/Product";
-import {
-  addToCart,
-  clearCart,
-  getCart,
-  getProducts,
-  removeCartItem,
-  updateCartItem,
-} from "./api/productsApi";
-import ProductDetailPage from "./pages/ProductDetailPage";
+import { addToCart, clearCart, getCart, getProducts, removeCartItem, updateCartItem } from "./api/productsApi";
 import ProductListPage from "./pages/ProductListPage";
+import ProductDetailPage from "./pages/ProductDetailPage";
+import CartSidebar from "./components/CartSidebar/CartSidebar";
 import "./index.css";
 
-export default function App() {
+type CartAction =
+  | { type: "SET_CART"; payload: Cart }
+  | { type: "CLEAR" };
+
+function cartReducer(state: Cart | null, action: CartAction): Cart | null {
+  switch (action.type) {
+    case "SET_CART": return action.payload;
+    case "CLEAR": return null;
+    default: return state;
+  }
+}
+
+function AppInner() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [cart, setCart] = useState<Cart | null>(null);
+  const [cart, dispatch] = useReducer(cartReducer, null);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [loadingCart, setLoadingCart] = useState(true);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadProducts();
     loadCart();
   }, []);
 
+  function showSuccess(msg: string) {
+    setSuccessMessage(msg);
+    setTimeout(() => setSuccessMessage(""), 2500);
+  }
+
   async function loadProducts() {
     try {
       setLoadingProducts(true);
-      const data = await getProducts();
-      setProducts(data);
+      setProducts(await getProducts());
     } catch {
       setError("Failed to load products.");
     } finally {
@@ -40,8 +52,7 @@ export default function App() {
   async function loadCart() {
     try {
       setLoadingCart(true);
-      const data = await getCart();
-      setCart(data);
+      dispatch({ type: "SET_CART", payload: await getCart() });
     } catch {
       setError("Failed to load cart.");
     } finally {
@@ -51,8 +62,8 @@ export default function App() {
 
   async function handleAddToCart(productId: number) {
     try {
-      const updatedCart = await addToCart(productId, 1);
-      setCart(updatedCart);
+      dispatch({ type: "SET_CART", payload: await addToCart(productId, 1) });
+      showSuccess("Item added to cart!");
     } catch {
       setError("Failed to add item to cart.");
     }
@@ -60,10 +71,8 @@ export default function App() {
 
   async function handleUpdateQuantity(cartItemId: number, quantity: number) {
     if (quantity < 1) return;
-
     try {
-      const updatedCart = await updateCartItem(cartItemId, quantity);
-      setCart(updatedCart);
+      dispatch({ type: "SET_CART", payload: await updateCartItem(cartItemId, quantity) });
     } catch {
       setError("Failed to update quantity.");
     }
@@ -87,14 +96,12 @@ export default function App() {
     }
   }
 
-
-
   return (
     <div className="app">
       <header className="header">
-        <h1>Buckeye Marketplace</h1>
+        <h1 onClick={() => navigate("/")} style={{ cursor: "pointer" }}>Buckeye Marketplace</h1>
         <div className="cart-summary">
-          Cart Items: {cart?.itemCount ?? 0} | Total: ${cart?.cartTotal?.toFixed(2) ?? "0.00"}
+          🛒 {cart?.itemCount ?? 0} items — ${cart?.cartTotal?.toFixed(2) ?? "0.00"}
         </div>
       </header>
 
@@ -102,67 +109,48 @@ export default function App() {
 
       <main className="main-layout">
         <section className="content-section">
-          {selectedProduct ? (
-            <>
-              <ProductDetailPage
-                product={selectedProduct}
-                onBack={() => setSelectedProduct(null)}
-                onAddToCart={handleAddToCart}
-              />
-
-              
-            </>
-          ) : (
-            <ProductListPage
-              products={products}
-              loading={loadingProducts}
-              onAddToCart={handleAddToCart}
-              onViewDetails={setSelectedProduct}
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <ProductListPage
+                  products={products}
+                  loading={loadingProducts}
+                  onAddToCart={handleAddToCart}
+                  successMessage={successMessage}
+                />
+              }
             />
-          )}
+            <Route
+              path="/products/:id"
+              element={
+                <ProductDetailPage
+                  products={products}
+                  onAddToCart={handleAddToCart}
+                  successMessage={successMessage}
+                />
+              }
+            />
+          </Routes>
         </section>
 
-        <aside className="cart-section">
-          <h2>Your Cart</h2>
-
-          {loadingCart ? (
-            <p>Loading cart...</p>
-          ) : cart && cart.items.length > 0 ? (
-            <>
-              {cart.items.map((item) => (
-                <div key={item.id} className="cart-item">
-                  <h4>{item.productName}</h4>
-                  <p>
-                    <strong>Cart Item ID:</strong> {item.id}
-                  </p>
-                  <p>${item.unitPrice.toFixed(2)} each</p>
-                  <p>Subtotal: ${item.subtotal.toFixed(2)}</p>
-
-                  <div className="quantity-controls">
-                    <button onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}>
-                      -
-                    </button>
-                    <span>{item.quantity}</span>
-                    <button onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}>
-                      +
-                    </button>
-                  </div>
-
-                  <button className="remove-button" onClick={() => handleRemoveItem(item.id)}>
-                    Remove
-                  </button>
-                </div>
-              ))}
-
-              <button className="clear-cart-button" onClick={handleClearCart}>
-                Clear Cart
-              </button>
-            </>
-          ) : (
-            <p>Your cart is empty.</p>
-          )}
-        </aside>
+        <CartSidebar
+          cart={cart}
+          loadingCart={loadingCart}
+          onUpdateQuantity={handleUpdateQuantity}
+          onRemoveItem={handleRemoveItem}
+          onClearCart={handleClearCart}
+          onBrowse={() => navigate("/")}
+        />
       </main>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppInner />
+    </BrowserRouter>
   );
 }
