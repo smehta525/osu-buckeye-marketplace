@@ -1,10 +1,11 @@
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import type { Cart, Product } from "./types/Product";
 import { addToCart, clearCart, getCart, getProducts, removeCartItem, updateCartItem } from "./api/productsApi";
 import ProductListPage from "./pages/ProductListPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import CartSidebar from "./components/CartSidebar/CartSidebar";
+import Toast from "./components/Toast/Toast";
 import "./index.css";
 
 type CartAction =
@@ -25,7 +26,9 @@ function AppInner() {
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [loadingCart, setLoadingCart] = useState(true);
   const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [showToast, setShowToast] = useState(false);
+  const [toastKey, setToastKey] = useState(0);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,9 +36,12 @@ function AppInner() {
     loadCart();
   }, []);
 
-  function showSuccess(msg: string) {
-    setSuccessMessage(msg);
-    setTimeout(() => setSuccessMessage(""), 2500);
+  function triggerToast() {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setShowToast(false);
+    setToastKey((k) => k + 1);
+    requestAnimationFrame(() => setShowToast(true));
+    toastTimer.current = setTimeout(() => setShowToast(false), 2500);
   }
 
   async function loadProducts() {
@@ -63,7 +69,7 @@ function AppInner() {
   async function handleAddToCart(productId: number) {
     try {
       dispatch({ type: "SET_CART", payload: await addToCart(productId, 1) });
-      showSuccess("Item added to cart!");
+      triggerToast();
     } catch {
       setError("Failed to add item to cart.");
     }
@@ -99,7 +105,9 @@ function AppInner() {
   return (
     <div className="app">
       <header className="header">
-        <h1 onClick={() => navigate("/")} style={{ cursor: "pointer" }}>Buckeye Marketplace</h1>
+        <h1 onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
+          Buckeye Marketplace
+        </h1>
         <div className="cart-summary">
           🛒 {cart?.itemCount ?? 0} items — ${cart?.cartTotal?.toFixed(2) ?? "0.00"}
         </div>
@@ -117,7 +125,6 @@ function AppInner() {
                   products={products}
                   loading={loadingProducts}
                   onAddToCart={handleAddToCart}
-                  successMessage={successMessage}
                 />
               }
             />
@@ -127,7 +134,6 @@ function AppInner() {
                 <ProductDetailPage
                   products={products}
                   onAddToCart={handleAddToCart}
-                  successMessage={successMessage}
                 />
               }
             />
@@ -143,6 +149,8 @@ function AppInner() {
           onBrowse={() => navigate("/")}
         />
       </main>
+
+      <Toast message="Added to cart" visible={showToast} toastKey={toastKey} />
     </div>
   );
 }

@@ -1,11 +1,37 @@
 .cart-section {
-    width: 280px;
+    position: relative;
     background: white;
     border-left: 1px solid #ddd;
     padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 12px;
+    flex-shrink: 0;
+    min-width: 200px;
+    max-width: 500px;
+  }
+  
+  .cart-dragger {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    cursor: col-resize;
+    background: transparent;
+    transition: background 0.2s;
+    z-index: 10;
+    user-select: none;
+  }
+  
+  .cart-dragger:hover {
+    background: #bb0000;
+    opacity: 0.4;
+  }
+  
+  .cart-section.dragging,
+  .cart-section.dragging * {
+    user-select: none;
   }
   
   .cart-section h2 {

@@ -7,10 +7,9 @@ type Props = {
   products: Product[];
   loading: boolean;
   onAddToCart: (productId: number) => void;
-  successMessage: string;
 };
 
-export default function ProductListPage({ products, loading, onAddToCart, successMessage }: Props) {
+export default function ProductListPage({ products, loading, onAddToCart }: Props) {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const navigate = useNavigate();
 
@@ -24,8 +23,6 @@ export default function ProductListPage({ products, loading, onAddToCart, succes
 
   return (
     <section className="products-section">
-      {successMessage && <p className="success-message">{successMessage}</p>}
-
       <div className="category-filter">
         {categories.map((cat) => (
           <button

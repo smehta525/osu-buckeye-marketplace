@@ -4,10 +4,9 @@ import type { Product } from "../types/Product";
 type Props = {
   products: Product[];
   onAddToCart: (productId: number) => void;
-  successMessage: string;
 };
 
-export default function ProductDetailPage({ products, onAddToCart, successMessage }: Props) {
+export default function ProductDetailPage({ products, onAddToCart }: Props) {
   const { id } = useParams();
   const navigate = useNavigate();
   const product = products.find((p) => p.id === Number(id));
@@ -16,8 +15,6 @@ export default function ProductDetailPage({ products, onAddToCart, successMessag
 
   return (
     <section className="product-detail-section">
-      {successMessage && <p className="success-message">{successMessage}</p>}
-
       <button className="back-button" onClick={() => navigate("/")}>← Back to Products</button>
 
       <div className="product-detail-card">
