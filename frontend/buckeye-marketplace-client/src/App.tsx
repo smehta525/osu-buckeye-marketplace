@@ -6,23 +6,12 @@ import ProductListPage from "./pages/ProductListPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import CartSidebar from "./components/CartSidebar/CartSidebar";
 import Toast from "./components/Toast/Toast";
+import { cartReducer } from "./reducers/cartReducer.ts";
 import "./index.css";
-
-type CartAction =
-  | { type: "SET_CART"; payload: Cart }
-  | { type: "CLEAR" };
-
-function cartReducer(state: Cart | null, action: CartAction): Cart | null {
-  switch (action.type) {
-    case "SET_CART": return action.payload;
-    case "CLEAR": return null;
-    default: return state;
-  }
-}
 
 function AppInner() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [cart, dispatch] = useReducer(cartReducer, null);
+  const [cart, dispatch] = useReducer(cartReducer, null as Cart | null);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [loadingCart, setLoadingCart] = useState(true);
   const [error, setError] = useState("");

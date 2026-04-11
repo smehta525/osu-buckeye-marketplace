@@ -3,6 +3,7 @@ using BuckeyeMarketplace.Api.Dtos;
 using BuckeyeMarketplace.Api.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace BuckeyeMarketplace.Api.Controllers;
 
@@ -11,12 +12,14 @@ namespace BuckeyeMarketplace.Api.Controllers;
 public class CartController : ControllerBase
 {
     private readonly BuckeyeMarketplaceContext _context;
-    private const string CurrentUserId = "default-user";
 
     public CartController(BuckeyeMarketplaceContext context)
     {
         _context = context;
     }
+
+    private string CurrentUserId =>
+        User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "default-user";
 
     [HttpGet]
     public async Task<ActionResult<CartResponseDto>> GetCart()
