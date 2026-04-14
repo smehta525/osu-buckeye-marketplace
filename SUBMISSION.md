@@ -2,7 +2,7 @@
 
 ## Test Credentials
 
-Regular user: shreya@gmail.com / Shreya123
+Regular user: shreyam@gmail.com / Shreya123
 
 Admin user (seeded): admin@buckeyemarketplace.com / Admin123!
 
