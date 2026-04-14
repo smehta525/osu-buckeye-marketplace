@@ -9,7 +9,7 @@ namespace BuckeyeMarketplace.Api.Tests.Controllers;
 public class ProductsControllerTests
 {
     [Fact]
-    public async Task GetAll_ReturnsAllProducts()
+    public async Task GetProducts_ReturnsAllProducts()
     {
         await using var context = BuildContext();
         context.Products.AddRange(
@@ -20,7 +20,7 @@ public class ProductsControllerTests
 
         var controller = new ProductsController(context);
 
-        var result = await controller.GetAll();
+        var result = await controller.GetProducts();
 
         var ok = Assert.IsType<OkObjectResult>(result.Result);
         var products = Assert.IsAssignableFrom<IEnumerable<Product>>(ok.Value);
@@ -30,19 +30,18 @@ public class ProductsControllerTests
     }
 
     [Fact]
-    public async Task GetById_ReturnsNotFound_WhenProductDoesNotExist()
+    public async Task GetProduct_ReturnsNotFound_WhenProductDoesNotExist()
     {
         await using var context = BuildContext();
         var controller = new ProductsController(context);
 
-        var result = await controller.GetById(999);
+        var result = await controller.GetProduct(999);
 
-        var notFound = Assert.IsType<NotFoundObjectResult>(result.Result);
-        Assert.Equal(404, notFound.StatusCode);
+        Assert.IsType<NotFoundResult>(result.Result);
     }
 
     [Fact]
-    public async Task GetById_ReturnsProduct_WhenProductExists()
+    public async Task GetProduct_ReturnsProduct_WhenProductExists()
     {
         await using var context = BuildContext();
         context.Products.Add(new Product { Id = 4, Title = "Desk Lamp", Price = 35m });
@@ -50,7 +49,7 @@ public class ProductsControllerTests
 
         var controller = new ProductsController(context);
 
-        var result = await controller.GetById(4);
+        var result = await controller.GetProduct(4);
 
         var ok = Assert.IsType<OkObjectResult>(result.Result);
         var product = Assert.IsType<Product>(ok.Value);

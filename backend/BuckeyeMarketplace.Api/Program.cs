@@ -1,7 +1,8 @@
 using BuckeyeMarketplace.Api.Data;
 using BuckeyeMarketplace.Api.Models;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -62,6 +63,8 @@ using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<BuckeyeMarketplaceContext>();
     context.Database.Migrate();
+
+    // Seed products
     if (!context.Products.Any())
     {
         context.Products.AddRange(
@@ -77,9 +80,23 @@ using (var scope = app.Services.CreateScope())
         );
         context.SaveChanges();
     }
-    if (!context.Carts.Any())
+
+    // Seed admin user
+    if (!context.Users.Any(u => u.Role == "Admin"))
     {
-        context.Carts.Add(new Cart { UserId = "default-user" });
+        var hasher = new PasswordHasher<User>();
+        var admin = new User
+        {
+            Email = "admin@buckeyemarketplace.com",
+            Name = "Admin",
+            Role = "Admin"
+        };
+        admin.PasswordHash = hasher.HashPassword(admin, "Admin123!");
+        context.Users.Add(admin);
+        context.SaveChanges();
+
+        // Create cart for admin
+        context.Carts.Add(new Cart { UserId = admin.Id.ToString() });
         context.SaveChanges();
     }
 }

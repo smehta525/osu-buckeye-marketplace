@@ -9,9 +9,10 @@ type Props = {
   onRemoveItem: (id: number) => void;
   onClearCart: () => void;
   onBrowse: () => void;
+  onCheckout?: () => void;
 };
 
-export default function CartSidebar({ cart, loadingCart, onUpdateQuantity, onRemoveItem, onClearCart, onBrowse }: Props) {
+export default function CartSidebar({ cart, loadingCart, onUpdateQuantity, onRemoveItem, onClearCart, onBrowse, onCheckout }: Props) {
   const [width, setWidth] = useState(280);
   const [isDragging, setIsDragging] = useState(false);
   const dragging = useRef(false);
@@ -65,6 +66,9 @@ export default function CartSidebar({ cart, loadingCart, onUpdateQuantity, onRem
             </div>
           ))}
           <div className="cart-total"><strong>Total: ${cart.cartTotal.toFixed(2)}</strong></div>
+          {onCheckout && (
+            <button className="checkout-button" onClick={onCheckout}>Checkout</button>
+          )}
           <button className="clear-cart-button" onClick={onClearCart}>Clear Cart</button>
         </>
       ) : (

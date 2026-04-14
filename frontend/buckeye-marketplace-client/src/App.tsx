@@ -1,13 +1,33 @@
 import { useEffect, useReducer, useRef, useState } from "react";
-import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate, Navigate, Link } from "react-router-dom";
 import type { Cart, Product } from "./types/Product";
 import { addToCart, clearCart, getCart, getProducts, removeCartItem, updateCartItem } from "./api/productsApi";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import ProductListPage from "./pages/ProductListPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import CheckoutPage from "./pages/CheckoutPage";
+import OrderConfirmationPage from "./pages/OrderConfirmationPage";
+import OrderHistoryPage from "./pages/OrderHistoryPage";
+import AdminDashboardPage from "./pages/AdminDashboardPage";
 import CartSidebar from "./components/CartSidebar/CartSidebar";
 import Toast from "./components/Toast/Toast";
 import { cartReducer } from "./reducers/cartReducer.ts";
 import "./index.css";
+
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  if (!user) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+}
+
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { user, isAdmin } = useAuth();
+  if (!user) return <Navigate to="/login" replace />;
+  if (!isAdmin) return <Navigate to="/" replace />;
+  return <>{children}</>;
+}
 
 function AppInner() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -19,11 +39,20 @@ function AppInner() {
   const [toastKey, setToastKey] = useState(0);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const navigate = useNavigate();
+  const { user, logout, isAdmin } = useAuth();
 
   useEffect(() => {
     loadProducts();
-    loadCart();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      loadCart();
+    } else {
+      dispatch({ type: "SET_CART", payload: null as any });
+      setLoadingCart(false);
+    }
+  }, [user]);
 
   function triggerToast() {
     if (toastTimer.current) clearTimeout(toastTimer.current);
@@ -49,13 +78,18 @@ function AppInner() {
       setLoadingCart(true);
       dispatch({ type: "SET_CART", payload: await getCart() });
     } catch {
-      setError("Failed to load cart.");
+      // Cart might not exist yet for new users, that's ok
+      dispatch({ type: "SET_CART", payload: { id: 0, userId: "", itemCount: 0, cartTotal: 0, items: [] } });
     } finally {
       setLoadingCart(false);
     }
   }
 
   async function handleAddToCart(productId: number) {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
     try {
       dispatch({ type: "SET_CART", payload: await addToCart(productId, 1) });
       triggerToast();
@@ -91,15 +125,36 @@ function AppInner() {
     }
   }
 
+  function handleLogout() {
+    logout();
+    navigate("/");
+  }
+
   return (
     <div className="app">
       <header className="header">
         <h1 onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
           Buckeye Marketplace
         </h1>
-        <div className="cart-summary">
-          🛒 {cart?.itemCount ?? 0} items — ${cart?.cartTotal?.toFixed(2) ?? "0.00"}
-        </div>
+        <nav className="header-nav">
+          {user && (
+            <>
+              <Link to="/orders">My Orders</Link>
+              {isAdmin && <Link to="/admin">Admin</Link>}
+            </>
+          )}
+          <div className="cart-summary">
+            🛒 {cart?.itemCount ?? 0} items — ${cart?.cartTotal?.toFixed(2) ?? "0.00"}
+          </div>
+          {user ? (
+            <div className="user-info">
+              <span>{user.name}</span>
+              <button onClick={handleLogout} className="logout-btn">Log Out</button>
+            </div>
+          ) : (
+            <Link to="/login" className="login-link">Log In</Link>
+          )}
+        </nav>
       </header>
 
       {error && <p className="error-message">{error}</p>}
@@ -126,17 +181,54 @@ function AppInner() {
                 />
               }
             />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route
+              path="/checkout"
+              element={
+                <ProtectedRoute>
+                  <CheckoutPage cart={cart} onOrderPlaced={loadCart} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/order-confirmation/:confirmationNumber"
+              element={
+                <ProtectedRoute>
+                  <OrderConfirmationPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/orders"
+              element={
+                <ProtectedRoute>
+                  <OrderHistoryPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <AdminDashboardPage />
+                </AdminRoute>
+              }
+            />
           </Routes>
         </section>
 
-        <CartSidebar
-          cart={cart}
-          loadingCart={loadingCart}
-          onUpdateQuantity={handleUpdateQuantity}
-          onRemoveItem={handleRemoveItem}
-          onClearCart={handleClearCart}
-          onBrowse={() => navigate("/")}
-        />
+        {user && (
+          <CartSidebar
+            cart={cart}
+            loadingCart={loadingCart}
+            onUpdateQuantity={handleUpdateQuantity}
+            onRemoveItem={handleRemoveItem}
+            onClearCart={handleClearCart}
+            onBrowse={() => navigate("/")}
+            onCheckout={() => navigate("/checkout")}
+          />
+        )}
       </main>
 
       <Toast message="Added to cart" visible={showToast} toastKey={toastKey} />
@@ -147,7 +239,9 @@ function AppInner() {
 export default function App() {
   return (
     <BrowserRouter>
-      <AppInner />
+      <AuthProvider>
+        <AppInner />
+      </AuthProvider>
     </BrowserRouter>
   );
 }

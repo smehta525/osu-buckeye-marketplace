@@ -1,6 +1,7 @@
 using BuckeyeMarketplace.Api.Data;
 using BuckeyeMarketplace.Api.Dtos;
 using BuckeyeMarketplace.Api.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -9,6 +10,7 @@ namespace BuckeyeMarketplace.Api.Controllers;
 
 [ApiController]
 [Route("api/cart")]
+[Authorize]
 public class CartController : ControllerBase
 {
     private readonly BuckeyeMarketplaceContext _context;

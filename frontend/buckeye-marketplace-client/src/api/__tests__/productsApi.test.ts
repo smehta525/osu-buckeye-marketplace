@@ -11,6 +11,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 describe("productsApi", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    // Mock localStorage so auth headers don't break tests
+    vi.spyOn(Storage.prototype, "getItem").mockReturnValue(null);
   });
 
   it("getProducts returns product list when request is successful", async () => {
@@ -47,13 +49,10 @@ describe("productsApi", () => {
 
     const result = await addToCart(3, 2);
 
-    expect(fetch).toHaveBeenCalledWith("http://localhost:5062/api/cart", {
+    expect(fetch).toHaveBeenCalledWith("http://localhost:5062/api/cart", expect.objectContaining({
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
       body: JSON.stringify({ productId: 3, quantity: 2 }),
-    });
+    }));
     expect(result).toEqual(cart);
   });
 
@@ -66,13 +65,10 @@ describe("productsApi", () => {
 
     const result = await updateCartItem(8, 4);
 
-    expect(fetch).toHaveBeenCalledWith("http://localhost:5062/api/cart/8", {
+    expect(fetch).toHaveBeenCalledWith("http://localhost:5062/api/cart/8", expect.objectContaining({
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
       body: JSON.stringify({ quantity: 4 }),
-    });
+    }));
     expect(result).toEqual(cart);
   });
 
@@ -81,9 +77,9 @@ describe("productsApi", () => {
 
     await removeCartItem(7);
 
-    expect(fetch).toHaveBeenCalledWith("http://localhost:5062/api/cart/7", {
+    expect(fetch).toHaveBeenCalledWith("http://localhost:5062/api/cart/7", expect.objectContaining({
       method: "DELETE",
-    });
+    }));
   });
 
   it("clearCart sends delete request", async () => {
@@ -91,8 +87,8 @@ describe("productsApi", () => {
 
     await clearCart();
 
-    expect(fetch).toHaveBeenCalledWith("http://localhost:5062/api/cart/clear", {
+    expect(fetch).toHaveBeenCalledWith("http://localhost:5062/api/cart/clear", expect.objectContaining({
       method: "DELETE",
-    });
+    }));
   });
 });
