@@ -5,16 +5,19 @@ on:
     branches: [main]
     paths:
       - 'backend/**'
+      - 'osu-buckeye-marketplace.sln'
       - '.github/workflows/backend-ci-cd.yml'
   pull_request:
     branches: [main]
     paths:
       - 'backend/**'
+      - 'osu-buckeye-marketplace.sln'
   workflow_dispatch:
 
 env:
   AZURE_WEBAPP_NAME: buckeye-api-shreyas
   DOTNET_VERSION: '8.0.x'
+  SOLUTION_FILE: osu-buckeye-marketplace.sln
   WORKING_DIRECTORY: backend/BuckeyeMarketplace.Api
   TEST_PROJECT: backend/BuckeyeMarketplace.Api.Tests
 
@@ -31,10 +34,10 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Restore dependencies
-        run: dotnet restore backend/
+        run: dotnet restore ${{ env.SOLUTION_FILE }}
 
       - name: Build
-        run: dotnet build backend/ --configuration Release --no-restore
+        run: dotnet build ${{ env.SOLUTION_FILE }} --configuration Release --no-restore
 
       - name: Run tests
         run: dotnet test ${{ env.TEST_PROJECT }} --configuration Release --no-build --verbosity normal
