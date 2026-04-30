@@ -395,3 +395,38 @@
     border-radius: 4px;
     border: 1px solid #ccc;
   }
+
+.order-header-button {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+
+.order-header-button:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.order-summary-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 0;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.order-toggle-icon {
+  margin-left: auto;
+  color: #bb0000;
+}
+
+.order-expanded {
+  border-top: 1px solid #eee;
+  padding-top: 12px;
+  margin-top: 8px;
+}
