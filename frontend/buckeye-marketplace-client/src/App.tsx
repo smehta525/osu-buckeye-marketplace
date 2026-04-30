@@ -15,6 +15,7 @@ import CartSidebar from "./components/CartSidebar/CartSidebar";
 import Toast from "./components/Toast/Toast";
 import { cartReducer } from "./reducers/cartReducer.ts";
 import "./index.css";
+import "./responsive.css";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();

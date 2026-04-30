@@ -1,71 +1,316 @@
 # osu-buckeye-marketplace
-An e-commerce platform design project for Ohio State University focused on user personas, journey mapping, feature development, and user stories.
 
-## 1. Project Description
+A full-stack e-commerce platform built for Ohio State University students to buy and sell items with each other. Started as a coursework project focused on user personas and journey mapping, grew into a deployed production application over six milestones.
 
-### Buckeye Marketplace
-This project is a simple marketplace app where users can browse products posted by other people, view details on each one and add things to a shopping cart. The frontend is built with React and TypeScript. The backend is a .NET 10 Web API connected to a SQLite database using Entity Framework Core.
+**Live URLs**
+- Frontend: https://polite-beach-0f0c3400f.7.azurestaticapps.net
+- Backend API: https://buckeye-api-shreyas.azurewebsites.net
+- API documentation (Swagger): https://buckeye-api-shreyas.azurewebsites.net/
 
-Users can filter products by category, click into any product to see the full details and add it to their cart from both the list and detail pages. The cart lets you update quantities, remove items and clear everything out. Cart data saves to the database so it stays there even after refreshing the page.
-
-Milestone 3 was the product catalog. Milestone 4 adds the full shopping cart on top of that, wiring the frontend state all the way through to the database.
+**Demo accounts**
+- Admin: `admin@buckeyemarketplace.com` / `Admin123!`
+- Or register a fresh buyer account from the UI
 
 ---
 
-## 2. How to Run the Project Locally
+## 1. Features
 
-You need two terminals running at the same time.
+**Buyer-side**
+- Browse a catalog of student-listed items with category filters
+- Product detail pages with full description, price, seller, posting date
+- Shopping cart with add, update quantity, remove, and clear (server-persisted, survives refresh)
+- Account registration and login with JWT-based authentication
+- Place orders with shipping address; view order history and per-order status
+- Refresh-token flow so sessions survive token expiry without forced logouts
 
-### Run the .NET API
-```
-cd osu-buckeye-marketplace/backend/BuckeyeMarketplace.Api
+**Admin-side**
+- Admin dashboard gated by role claim on the JWT
+- Create, edit, and delete products
+- View every order across all users; update order status
+
+**Production qualities**
+- HTTPS on both frontend and backend
+- Secrets stored in Azure App Settings (no credentials in source)
+- Automated unit, component, and end-to-end tests run on every push
+- CI/CD pipeline auto-deploys to Azure on push to `main`
+
+---
+
+## 2. Technology Stack
+
+| Layer | Technology | Version |
+|---|---|---|
+| Frontend framework | React + TypeScript | React 18, TS 5 |
+| Frontend tooling | Vite | 8 |
+| Styling | Tailwind CSS | 3 |
+| Frontend testing | Vitest + React Testing Library | latest |
+| End-to-end testing | Playwright | latest |
+| Backend framework | ASP.NET Core Web API | .NET 8 |
+| ORM | Entity Framework Core | 8.0.8 |
+| Authentication | JWT bearer (HS256) + refresh tokens | — |
+| Backend testing | xUnit + WebApplicationFactory | latest |
+| Local database | SQLite | — |
+| Production database | Azure SQL Database (Basic tier) | — |
+| Hosting (frontend) | Azure Static Web Apps | — |
+| Hosting (backend) | Azure App Service Linux (B1) | — |
+| CI/CD | GitHub Actions | — |
+
+---
+
+## 3. Local Development Setup
+
+You need two terminals running at the same time. Prerequisites: .NET 8 SDK, Node.js 20+.
+
+### Backend
+```bash
+cd backend/BuckeyeMarketplace.Api
+dotnet user-secrets set "Jwt:Key" "AnyLocalDevKeyAtLeast32CharactersLong!"
 dotnet run
 ```
-The API starts at something like `https://localhost:5062/api/products`
+The API starts at `http://localhost:5062`. Swagger is at the root in development.
 
-### Run the React App
-```
-cd osu-buckeye-marketplace/frontend/buckeye-marketplace-client
+### Frontend
+```bash
+cd frontend/buckeye-marketplace-client
 npm install
 npm run dev
 ```
-Open the browser at the local host it gives you, usually `http://localhost:5173`. The app loads and pulls data from the API automatically.
+Opens at `http://localhost:5173` and reads from `.env.development`, which points the API base at `localhost:5062`.
+
+### Running tests locally
+```bash
+# Backend unit + integration tests
+cd backend/BuckeyeMarketplace.Api.Tests
+dotnet test
+
+# Frontend unit + component tests
+cd frontend/buckeye-marketplace-client
+npm test
+
+# End-to-end (frontend must be running)
+npx playwright test
+```
 
 ---
 
-## 3. Screenshots
+## 4. Environment Variables
 
-Product List page and Product Detail page screenshots are in `osu-buckeye-marketplace/Screenshots`
+| Name | Where set | Purpose |
+|---|---|---|
+| `Jwt:Key` | `dotnet user-secrets` (local) / Azure App Settings as `Jwt__Key` (prod) | HS256 signing key. Must be ≥ 32 characters / 256 bits. |
+| `ConnectionStrings:DefaultConnection` | Azure App Service connection string named `DefaultConnection` | Azure SQL connection. Local dev falls back to SQLite (`marketplace.db`). |
+| `AllowedOrigins:0`, `AllowedOrigins:1`, ... | Azure App Settings as `AllowedOrigins__0` etc. | CORS allowlist for the deployed frontend. |
+| `ASPNETCORE_ENVIRONMENT` | Azure App Settings | Set to `Production` in prod. Drives the SQLite/SQL Server switch in `Program.cs`. |
+| `VITE_API_BASE` | `frontend/.env.development` and `.env.production` | API base URL the frontend talks to. |
+
+The frontend `.env.production` points at the live backend URL above; `.env.development` points at `localhost:5062`. Vite picks the right one automatically based on whether you're running `dev` or `build`.
 
 ---
 
-## 4. AI Tool Usage
+## 5. Deployment
 
-For milestone 3 I was mostly using ChatGPT. By milestone 4 I switched over to Claude and stuck with it for the rest of the project. The difference was pretty noticeable. Claude gave cleaner code, kept things simpler and actually understood what I was trying to build without me having to over-explain everything.
+The application is deployed to Azure across three resources, all in the `rg-buckeye-marketplace` resource group:
 
-A big part of milestone 4 was using Claude to rework the whole user interface. The original UI from M3 was pretty plain. I gave Claude my existing code and described what I wanted changed and it rewrote the layout, the cart sidebar, the product cards and the category filter buttons in a much cleaner way than what I had before.
+| Resource | Name | Tier |
+|---|---|---|
+| Frontend | `buckeye-frontend-shreyas` (Static Web App) | Free |
+| Backend | `buckeye-api-shreyas` (App Service Linux) | Basic B1 |
+| Database | `BuckeyeMarketplaceDb` on `buckeye-sql-sm2026` | Basic |
 
-### What I asked for help with
-1. Setting up the CartController with all five endpoints
-2. Switching from in-memory storage to SQLite with EF migrations
-3. Setting up React Router so the list and detail pages had real URLs
-4. Replacing useState with useReducer for cart state
-5. Redesigning the product cards to show all required fields
-6. Adding success messages when items get added to the cart
-7. Setting up the empty cart state with a button to go back to browsing
-8. Writing the .gitignore for both the .NET and React sides of the project
-9. Checking my code against the rubric to catch anything missing
+### Automated deployment (preferred)
+Pushing to `main` triggers GitHub Actions which build, test, and deploy each side automatically. See `.github/workflows/`.
 
-### Example prompts I used
-1. "Here is my CartController. Clean it up and make sure all five endpoints have the right HTTP status codes."
-2. "Switch my project from UseInMemoryDatabase to SQLite with EF Core migrations. Here is my Program.cs and my context file."
-3. "Set up React Router in my app with a product list at / and a product detail page at /products/:id. Here are my current files."
-4. "My cart is using useState right now. Rewrite it to use useReducer and keep the same functionality."
-5. "Here is my ProductCard component. I want it to show all eight required fields from the rubric. Make it clean and simple."
-6. "Redesign the cart sidebar and product card layout. Keep it simple but make it look better than what I have."
+### Manual backend deployment
+```bash
+cd backend/BuckeyeMarketplace.Api
+dotnet publish -c Release -o ./publish
+cd publish && zip -r ../publish.zip . && cd ..
+az webapp deploy \
+  --resource-group rg-buckeye-marketplace \
+  --name buckeye-api-shreyas \
+  --src-path publish.zip \
+  --type zip
+```
 
-### What I changed
-Claude would sometimes suggest consolidating everything into one big file. I pushed back on that and kept the components in separate files because it made more sense for the project structure. Some styling suggestions did not match what I was going for so I adjusted those. The seed data and image URLs I picked myself.
+### Manual frontend deployment
+```bash
+cd frontend/buckeye-marketplace-client
+npm run build
+swa deploy ./dist \
+  --deployment-token <token from Azure portal> \
+  --env production
+```
 
-### Where I used my own judgment
-I tested every part of the cart manually to make sure adding, updating and removing items all worked correctly and stayed in sync between the frontend and the database. I also checked that none of the components had hardcoded product data left over from earlier in the project.
+---
+
+## 6. Architecture
+
+```mermaid
+flowchart LR
+    User[Browser] -->|HTTPS| SWA[Azure Static Web App<br/>React frontend]
+    SWA -->|HTTPS / JWT| API[Azure App Service<br/>ASP.NET Core API]
+    API -->|EF Core| DB[(Azure SQL Database)]
+    Dev[Developer push to main] --> GH[GitHub Actions]
+    GH -->|deploy| SWA
+    GH -->|deploy| API
+```
+
+The frontend is a Single Page Application served as static files. It calls the backend over HTTPS using a JWT bearer token stored in `localStorage`. The backend is a stateless REST API; persistent state lives in Azure SQL. CI/CD reacts to pushes on `main`, runs tests, and deploys both sides to their respective Azure services.
+
+---
+
+## 7. Database Schema
+
+```mermaid
+erDiagram
+    USERS ||--o| CARTS : has
+    USERS ||--o{ ORDERS : places
+    CARTS ||--o{ CART_ITEMS : contains
+    CART_ITEMS }o--|| PRODUCTS : references
+    ORDERS ||--o{ ORDER_ITEMS : contains
+    ORDER_ITEMS }o--|| PRODUCTS : references
+
+    USERS {
+        int Id PK
+        string Email
+        string Name
+        string PasswordHash
+        string Role
+        string RefreshToken
+        datetime RefreshTokenExpiry
+    }
+    PRODUCTS {
+        int Id PK
+        string Title
+        string Description
+        decimal Price
+        string Category
+        string SellerName
+        string PostedDate
+        string ImageUrl
+    }
+    CARTS {
+        int Id PK
+        string UserId
+    }
+    CART_ITEMS {
+        int Id PK
+        int CartId FK
+        int ProductId FK
+        int Quantity
+    }
+    ORDERS {
+        int Id PK
+        int UserId FK
+        decimal Total
+        string Status
+        string ShippingAddress
+        datetime CreatedAt
+    }
+    ORDER_ITEMS {
+        int Id PK
+        int OrderId FK
+        int ProductId FK
+        int Quantity
+        decimal PriceAtPurchase
+    }
+```
+
+A user has at most one cart at a time but many orders. Cart and order items are separate tables so historical orders preserve the price at purchase time even if the underlying product is later edited or deleted. The `Role` column on `Users` (`Buyer` or `Admin`) is encoded into the JWT and checked server-side on protected endpoints.
+
+---
+
+## 8. API Documentation
+
+Interactive Swagger / OpenAPI docs are served at the API root in production:
+
+**https://buckeye-api-shreyas.azurewebsites.net/**
+
+Endpoints summary:
+
+| Method | Path | Auth | Purpose |
+|---|---|---|---|
+| POST | `/api/auth/register` | none | Create account, returns JWT + refresh token |
+| POST | `/api/auth/login` | none | Sign in, returns JWT + refresh token |
+| POST | `/api/auth/refresh` | none | Exchange refresh token for fresh JWT |
+| GET | `/api/products` | none | List all products |
+| GET | `/api/products/{id}` | none | Single product detail |
+| POST | `/api/products` | admin | Create a product |
+| PUT | `/api/products/{id}` | admin | Update a product |
+| DELETE | `/api/products/{id}` | admin | Delete a product |
+| GET | `/api/cart` | user | Current user's cart |
+| POST | `/api/cart` | user | Add item to cart |
+| PUT | `/api/cart/{cartItemId}` | user | Update item quantity |
+| DELETE | `/api/cart/{cartItemId}` | user | Remove item |
+| DELETE | `/api/cart/clear` | user | Empty cart |
+| POST | `/api/orders` | user | Place order from current cart |
+| GET | `/api/orders/mine` | user | Current user's orders |
+| GET | `/api/orders` | admin | All orders |
+| PUT | `/api/orders/{orderId}/status` | admin | Update order status |
+
+---
+
+## 9. AI Tool Usage Across the Project
+
+Across all six milestones I used a mix of GitHub Copilot in the editor and Claude as a longer-form coding partner. Copilot handled in-line completions and small refactors. Claude was the primary tool for design choices, debugging, and longer changes.
+
+**By milestone:**
+
+- **M1 (planning)** — used both tools to brainstorm user personas, then refined manually.
+- **M3 (product catalog)** — used ChatGPT, but found it less reliable on the fullstack TypeScript + .NET shape. Switched to Claude after this milestone.
+- **M4 (cart)** — Claude did the React Router migration, useState → useReducer rewrite, and the cart sidebar redesign. I kept the project structure split across files even when Claude proposed consolidating.
+- **M5 (auth + orders)** — Claude scaffolded the JWT pipeline, refresh-token flow, admin role enforcement, and the orders feature end-to-end. I tested manually and pushed back on details (e.g. wanting cookies vs. localStorage for tokens — kept localStorage for simplicity).
+- **M6 (deployment)** — Claude walked me through the Azure CLI deployment, debugged the EF Core SQLite-vs-SQL-Server migration issue, the JWT key length crash, the seed-data IDENTITY conflict, the App Service quota issue, and the CI workflow YAML. See `docs/AI_REFLECTION.md` for the deeper reflection.
+
+**What I changed from AI suggestions:**
+- Kept components in separate files instead of one large file
+- Adjusted styling that didn't match the visual direction
+- Picked seed data and image URLs myself
+- Used `EnsureCreated()` for prod schema instead of generating SQL Server-specific migrations (acceptable for school project; flagged in test plan as a real-world limitation)
+
+**Where I used my own judgment:**
+- Manual end-to-end testing of every cart, checkout, and order flow against the deployed app
+- Cross-browser smoke testing in Safari, Chrome, and Firefox
+- Reviewed every CI workflow change before pushing instead of trusting it blindly
+
+A more detailed reflection lives in `docs/AI_REFLECTION.md`.
+
+---
+
+## 10. Documentation
+
+| Document | Location |
+|---|---|
+| Test plan and QA report | `docs/TEST_PLAN.md` |
+| User guide (with screenshots) | `docs/USER_GUIDE.md` |
+| Admin guide (with screenshots) | `docs/ADMIN_GUIDE.md` |
+| AI tool reflection | `docs/AI_REFLECTION.md` |
+| Architecture (this README, section 6) | above |
+| DB schema (this README, section 7) | above |
+
+Screenshots live under `Screenshots/`.
+
+---
+
+## 11. Repository Layout
+
+```
+osu-buckeye-marketplace/
+├── backend/
+│   ├── BuckeyeMarketplace.Api/           # ASP.NET Core Web API
+│   └── BuckeyeMarketplace.Api.Tests/     # xUnit + integration tests
+├── frontend/
+│   └── buckeye-marketplace-client/       # React + TypeScript SPA
+├── .github/workflows/
+│   ├── backend-ci-cd.yml                 # Build, test, deploy backend
+│   └── frontend-ci-cd.yml                # Build, test, deploy frontend
+├── docs/                                 # All milestone deliverables
+├── Screenshots/                          # UI screenshots
+└── osu-buckeye-marketplace.sln           # .NET solution file
+```
+
+---
+
+## 12. License
+
+MIT — see `LICENSE`.
