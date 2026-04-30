@@ -1,6 +1,6 @@
 import type { AuthResponse, Cart, Order, Product } from "../types/Product";
 
-const API_BASE = "http://localhost:5062/api";
+const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:5062/api";
 
 function getAuthUser(): { token: string; refreshToken: string } | null {
   const stored = localStorage.getItem("auth_user");

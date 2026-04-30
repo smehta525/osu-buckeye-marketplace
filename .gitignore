@@ -151,4 +151,10 @@ appsettings.Development.json
 
 # OS
 .DS_Store
-Thumbs.db
+Thumbs.db# Build artifacts
+backend/**/publish/
+backend/**/publish.zip
+frontend/**/dist/
+# Misc env duplicates without leading dot
+**/env.development
+**/env.production
