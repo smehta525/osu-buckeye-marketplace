@@ -40,6 +40,8 @@ jobs:
         run: dotnet build ${{ env.SOLUTION_FILE }} --configuration Release --no-restore
 
       - name: Run tests
+        env:
+          Jwt__Key: TestJwtKeyForCIThatIsLongEnoughToSatisfyHS256Requirements
         run: dotnet test ${{ env.TEST_PROJECT }} --configuration Release --no-build --verbosity normal
 
       - name: Publish
