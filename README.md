@@ -134,14 +134,34 @@ swa deploy ./dist --deployment-token <token> --env production
 
 ## Architecture
 
-```mermaid
-flowchart LR
-    User[Browser] -->|HTTPS| SWA[Azure Static Web App<br/>React frontend]
-    SWA -->|HTTPS / JWT| API[Azure App Service<br/>ASP.NET Core API]
-    API -->|EF Core| DB[(Azure SQL Database)]
-    Dev[Push to main] --> GH[GitHub Actions]
-    GH -->|deploy| SWA
-    GH -->|deploy| API
+```
+   ┌──────────────┐      HTTPS        ┌────────────────────────┐
+   │   Browser    │ ────────────────▶ │ Azure Static Web App   │
+   │  (end user)  │                   │   React + Vite SPA     │
+   └──────────────┘                   └───────────┬────────────┘
+                                                  │
+                                          HTTPS + JWT
+                                                  ▼
+                                      ┌────────────────────────┐
+                                      │  Azure App Service     │
+                                      │  ASP.NET Core 8 API    │
+                                      └───────────┬────────────┘
+                                                  │
+                                              EF Core
+                                                  ▼
+                                      ┌────────────────────────┐
+                                      │  Azure SQL Database    │
+                                      │  BuckeyeMarketplaceDb  │
+                                      └────────────────────────┘
+
+   ┌──────────────┐    push to main    ┌────────────────────────┐
+   │  Developer   │ ─────────────────▶ │   GitHub Actions       │
+   └──────────────┘                    │ build → test → deploy  │
+                                       └─────────┬──────────────┘
+                                                 │
+                                       ┌─────────┴──────────┐
+                                       ▼                    ▼
+                              Static Web App           App Service
 ```
 
 The frontend is a static SPA. It talks to the backend over HTTPS using a JWT in localStorage. The backend is stateless. State lives in Azure SQL. Every push to main runs CI which builds, tests, then deploys.
@@ -150,59 +170,44 @@ The frontend is a static SPA. It talks to the backend over HTTPS using a JWT in 
 
 ## Database schema
 
-```mermaid
-erDiagram
-    USERS ||--o| CARTS : has
-    USERS ||--o{ ORDERS : places
-    CARTS ||--o{ CART_ITEMS : contains
-    CART_ITEMS }o--|| PRODUCTS : references
-    ORDERS ||--o{ ORDER_ITEMS : contains
-    ORDER_ITEMS }o--|| PRODUCTS : references
-
-    USERS {
-        int Id PK
-        string Email
-        string Name
-        string PasswordHash
-        string Role
-        string RefreshToken
-        datetime RefreshTokenExpiry
-    }
-    PRODUCTS {
-        int Id PK
-        string Title
-        string Description
-        decimal Price
-        string Category
-        string SellerName
-        string PostedDate
-        string ImageUrl
-    }
-    CARTS {
-        int Id PK
-        string UserId
-    }
-    CART_ITEMS {
-        int Id PK
-        int CartId FK
-        int ProductId FK
-        int Quantity
-    }
-    ORDERS {
-        int Id PK
-        int UserId FK
-        decimal Total
-        string Status
-        string ShippingAddress
-        datetime CreatedAt
-    }
-    ORDER_ITEMS {
-        int Id PK
-        int OrderId FK
-        int ProductId FK
-        int Quantity
-        decimal PriceAtPurchase
-    }
+```
+   ┌─────────────────┐                       ┌─────────────────┐
+   │     USERS       │                       │    PRODUCTS     │
+   ├─────────────────┤                       ├─────────────────┤
+   │ Id (PK)         │                       │ Id (PK)         │
+   │ Email           │                       │ Title           │
+   │ Name            │                       │ Description     │
+   │ PasswordHash    │                       │ Price           │
+   │ Role            │                       │ Category        │
+   │ RefreshToken    │                       │ SellerName      │
+   │ RefreshExpiry   │                       │ PostedDate      │
+   └────┬────────┬───┘                       │ ImageUrl        │
+        │        │                           └────────┬────────┘
+        │        │                                    │
+        │ 1:1    │ 1:N                                │
+        │        │                                    │
+        ▼        ▼                                    │
+   ┌──────────┐  ┌──────────────┐                     │
+   │  CARTS   │  │   ORDERS     │                     │
+   ├──────────┤  ├──────────────┤                     │
+   │ Id (PK)  │  │ Id (PK)      │                     │
+   │ UserId   │  │ UserId (FK)  │                     │
+   └────┬─────┘  │ Total        │                     │
+        │        │ Status       │                     │
+        │ 1:N    │ ShippingAddr │                     │
+        │        │ CreatedAt    │                     │
+        ▼        └──────┬───────┘                     │
+   ┌──────────────┐     │ 1:N                         │
+   │  CART_ITEMS  │     ▼                             │
+   ├──────────────┤  ┌──────────────────┐             │
+   │ Id (PK)      │  │  ORDER_ITEMS     │             │
+   │ CartId (FK)  │  ├──────────────────┤             │
+   │ ProductId FK │──┤ Id (PK)          │             │
+   │ Quantity     │  │ OrderId (FK)     │             │
+   └──────────────┘  │ ProductId (FK)   │─────────────┘
+                     │ Quantity         │
+                     │ PriceAtPurchase  │
+                     └──────────────────┘
 ```
 
 A user has one cart but many orders. Cart items and order items are separate tables on purpose. That way past orders keep the price the buyer actually paid even if the seller edits or deletes the product later. The `Role` column on Users is encoded into the JWT and checked server side.

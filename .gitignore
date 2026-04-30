@@ -158,3 +158,4 @@ frontend/**/dist/
 # Misc env duplicates without leading dot
 **/env.development
 **/env.production
+*.pdf
