@@ -64,7 +64,7 @@
 | 7a  | Clean organization and patterns                                            | 1      | ✅ Met     | Backend: Controllers/, Models/, Dtos/, Data/, Migrations/ separation; Frontend: pages/, components/, context/, api/, reducers/, types/ organization; consistent naming and patterns throughout                                                           |
 | 7b  | AI usage documented                                                        | 1      | ✅ Met     | `docs/AI-USAGE.md` — documents what AI was used for, what it got wrong (4 specific examples), what student did themselves, and test results                                                                                                              |
 
-**Total: 24 / 25**
+**Total: 25 / 25**
 
 ## 3. Detailed Findings
 
